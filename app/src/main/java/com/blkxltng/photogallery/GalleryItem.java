@@ -1,12 +1,24 @@
 package com.blkxltng.photogallery;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by firej on 10/24/2017.
  */
 
 public class GalleryItem {
+
+    @SerializedName("title")
+    @Expose
     private String mCaption;
+
+    @SerializedName("id")
+    @Expose
     private String mId;
+
+    @SerializedName("url_s")
+    @Expose
     private String mUrl;
 
     @Override
