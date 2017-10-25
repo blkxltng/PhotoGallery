@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,8 @@ public class PhotoGalleryFragment extends Fragment {
 
     private RecyclerView mPhotoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
+    private boolean mIsLoading;
+    private int currentPage = 1;
 
     public static  PhotoGalleryFragment newInstance() {
         return new PhotoGalleryFragment();
@@ -42,6 +45,27 @@ public class PhotoGalleryFragment extends Fragment {
         mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
         setupAdapter();
+
+        mPhotoRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            GridLayoutManager manager = (GridLayoutManager) mPhotoRecyclerView.getLayoutManager();
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (mIsLoading)
+                    return;
+                int visibleItemCount = manager.getChildCount();
+                int totalItemCount = manager.getItemCount();
+                int pastVisibleItems = manager.findFirstVisibleItemPosition();
+                if (pastVisibleItems + visibleItemCount >= totalItemCount) {
+                    //End of list
+                    currentPage++;
+                    new FetchItemsTask().execute();
+                    Toast.makeText(getContext(), "Current Page: " + currentPage, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        });
 
         return v;
     }
@@ -94,13 +118,19 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         protected List<GalleryItem> doInBackground(Void... voids) {
-            return new FlickrFetchr().fetchItems();
+            mIsLoading = true;
+            return new FlickrFetchr().fetchItems(currentPage);
         }
 
         @Override
         protected void onPostExecute(List<GalleryItem> galleryItems) {
-            mItems = galleryItems;
-            setupAdapter();
+            mItems.addAll(galleryItems);
+            if(mPhotoRecyclerView.getAdapter() == null) {
+                setupAdapter();
+            } else {
+                mPhotoRecyclerView.getAdapter().notifyDataSetChanged();
+            }
+            mIsLoading = false;
         }
     }
 }
