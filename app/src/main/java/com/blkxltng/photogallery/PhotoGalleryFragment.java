@@ -6,9 +6,11 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ public class PhotoGalleryFragment extends Fragment {
 
     private RecyclerView mPhotoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
+    private static final int COLUMN_WIDTH = 140;
 
     public static  PhotoGalleryFragment newInstance() {
         return new PhotoGalleryFragment();
@@ -42,6 +45,17 @@ public class PhotoGalleryFragment extends Fragment {
         mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
         setupAdapter();
+
+        mPhotoRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                float columnWidthInPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, COLUMN_WIDTH, getActivity().getResources().getDisplayMetrics());
+                int width = mPhotoRecyclerView.getWidth();
+                int columnNumber = Math.round(width / columnWidthInPixels);
+                mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), columnNumber));
+                mPhotoRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
 
         return v;
     }
