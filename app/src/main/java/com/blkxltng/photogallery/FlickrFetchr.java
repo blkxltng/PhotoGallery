@@ -23,7 +23,7 @@ public class FlickrFetchr {
 
     private static final String TAG = "FlickrFetchr";
 
-    private static final String API_KEY = "Insert API Key Here";
+    private static final String API_KEY = "7d62d634edc1f7ece3b421522915487f";
 
     public byte[] getUrlBytes(String urlSpec) throws IOException {
         URL url = new URL(urlSpec);
