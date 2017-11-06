@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
+import android.util.LruCache;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +27,8 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     private Handler mResponseHandler;
     private ThumbnailDownloadListener<T> mThumbnailDownloadListener;
 
+    private LruCache<String, Bitmap> mLruCache;
+
     public interface ThumbnailDownloadListener<T> {
         void onThumbnailDownloaded(T target, Bitmap thumbnail);
     }
@@ -37,6 +40,17 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     public ThumbnailDownloader(Handler responseHandler) {
         super(TAG);
         mResponseHandler = responseHandler;
+
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int cacheSize = maxMemory / 8;
+
+        mLruCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+
     }
 
     @Override
@@ -78,27 +92,55 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     private void handleRequest(final T target) {
         try {
             final String url = mRequestMap.get(target);
+            final String imageKey = String.valueOf(target);
 
             if(url == null) {
                 return;
             }
 
-            byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
-            final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
-            Log.i(TAG, "Bitmap created");
+            final Bitmap bitmapFromMemCache = getBitmapFromMemCache(imageKey);
+            if (bitmapFromMemCache != null) {
+                Log.i(TAG, "Bitmap found in cache");
 
-            mResponseHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if(mRequestMap.get(target) != url || mHasQuit) {
-                        return;
+                mResponseHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(mRequestMap.get(target) != url || mHasQuit) {
+                            return;
+                        }
+                        mRequestMap.remove(target);
+                        mThumbnailDownloadListener.onThumbnailDownloaded(target, bitmapFromMemCache);
                     }
-                    mRequestMap.remove(target);
-                    mThumbnailDownloadListener.onThumbnailDownloaded(target, bitmap);
-                }
-            });
+                });
+            } else {
+                byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
+                final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+                Log.i(TAG, "Bitmap created");
+
+                mResponseHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(mRequestMap.get(target) != url || mHasQuit) {
+                            return;
+                        }
+                        mRequestMap.remove(target);
+                        addBitmapToMemoryCache(imageKey, bitmap);
+                        mThumbnailDownloadListener.onThumbnailDownloaded(target, bitmap);
+                    }
+                });
+            }
         } catch (IOException ioe) {
             Log.e(TAG, "Error downloading image", ioe);
         }
+    }
+
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            mLruCache.put(key, bitmap);
+        }
+    }
+
+    public Bitmap getBitmapFromMemCache(String key) {
+        return mLruCache.get(key);
     }
 }
