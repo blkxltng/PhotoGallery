@@ -92,13 +92,12 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     private void handleRequest(final T target) {
         try {
             final String url = mRequestMap.get(target);
-            final String imageKey = String.valueOf(target);
 
             if(url == null) {
                 return;
             }
 
-            final Bitmap bitmapFromMemCache = getBitmapFromMemCache(imageKey);
+            final Bitmap bitmapFromMemCache = getBitmapFromMemCache(url);
             if (bitmapFromMemCache != null) {
                 Log.i(TAG, "Bitmap found in cache");
 
@@ -124,7 +123,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
                             return;
                         }
                         mRequestMap.remove(target);
-                        addBitmapToMemoryCache(imageKey, bitmap);
+                        addBitmapToMemoryCache(url, bitmap);
                         mThumbnailDownloadListener.onThumbnailDownloaded(target, bitmap);
                     }
                 });

@@ -115,6 +115,47 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(PhotoHolder holder, int position) {
+//            if((mGalleryItems.size() - (position++)) < 10) {
+//                for(int i = position; i > (position - 10); i--) {
+//                    GalleryItem galleryItem = mGalleryItems.get(i);
+//                    Drawable placeholder = getResources().getDrawable(R.drawable.ic_photo_grey_48dp);
+//                    holder.bindDrawable(placeholder);
+//                    mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
+//                }
+//                for(int i = position; i < mGalleryItems.size(); i++) {
+//                    GalleryItem galleryItem = mGalleryItems.get(i);
+//                    Drawable placeholder = getResources().getDrawable(R.drawable.ic_photo_grey_48dp);
+//                    holder.bindDrawable(placeholder);
+//                    mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
+//                }
+//            } else if(position < 10) {
+//                for(int i = position; i >= 0; i--) {
+//                    GalleryItem galleryItem = mGalleryItems.get(i);
+//                    Drawable placeholder = getResources().getDrawable(R.drawable.ic_photo_grey_48dp);
+//                    holder.bindDrawable(placeholder);
+//                    mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
+//                }
+//                for(int i = position; i < (position + 10); i++) {
+//                    GalleryItem galleryItem = mGalleryItems.get(i);
+//                    Drawable placeholder = getResources().getDrawable(R.drawable.ic_photo_grey_48dp);
+//                    holder.bindDrawable(placeholder);
+//                    mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
+//                }
+//            } else {
+//                for(int i = position; i > (position - 10); i--) {
+//                    GalleryItem galleryItem = mGalleryItems.get(i);
+//                    Drawable placeholder = getResources().getDrawable(R.drawable.ic_photo_grey_48dp);
+//                    holder.bindDrawable(placeholder);
+//                    mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
+//                }
+//                for(int i = position; i < (position + 10); i++) {
+//                    GalleryItem galleryItem = mGalleryItems.get(i);
+//                    Drawable placeholder = getResources().getDrawable(R.drawable.ic_photo_grey_48dp);
+//                    holder.bindDrawable(placeholder);
+//                    mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
+//                }
+//            }
+
             GalleryItem galleryItem = mGalleryItems.get(position);
             Drawable placeholder = getResources().getDrawable(R.drawable.ic_photo_grey_48dp);
             holder.bindDrawable(placeholder);
