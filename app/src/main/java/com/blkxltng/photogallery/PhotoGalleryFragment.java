@@ -1,5 +1,6 @@
 package com.blkxltng.photogallery;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -18,7 +19,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,7 @@ public class PhotoGalleryFragment extends Fragment {
     private RecyclerView mPhotoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
     private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
+    private ProgressBar progressBar;
 
     public static  PhotoGalleryFragment newInstance() {
         return new PhotoGalleryFragment();
@@ -44,7 +48,6 @@ public class PhotoGalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        updateItems();
 
         Handler responseHandler = new Handler();
         mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
@@ -68,6 +71,11 @@ public class PhotoGalleryFragment extends Fragment {
         mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
         setupAdapter();
+
+        progressBar = (ProgressBar) v.findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.INVISIBLE);
+
+        updateItems();
 
         return v;
     }
@@ -98,6 +106,17 @@ public class PhotoGalleryFragment extends Fragment {
             public boolean onQueryTextSubmit(String s) {
                 Log.d(TAG, "onQueryTextSubmit: " + s);
                 QueryPreferences.setStoredQuery(getActivity(), s);
+
+                //
+                View view = getActivity().getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+                searchView.onActionViewCollapsed();
+
+                mItems.clear();
+
                 updateItems();
                 return true;
             }
@@ -131,6 +150,7 @@ public class PhotoGalleryFragment extends Fragment {
     }
 
     private void updateItems() {
+        progressBar.setVisibility(View.VISIBLE);
         String query = QueryPreferences.getStoredQuery(getActivity());
         new FetchItemsTask(query).execute();
     }
@@ -191,6 +211,12 @@ public class PhotoGalleryFragment extends Fragment {
         }
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
         protected List<GalleryItem> doInBackground(Void... voids) {
 
             if(mQuery == null) {
@@ -202,6 +228,7 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         protected void onPostExecute(List<GalleryItem> galleryItems) {
+            progressBar.setVisibility(View.INVISIBLE);
             mItems = galleryItems;
             setupAdapter();
         }
