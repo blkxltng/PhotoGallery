@@ -15,7 +15,7 @@ import android.widget.ProgressBar;
  * Created by firej on 11/14/2017.
  */
 
-public class PhotoPageFragment extends VisibleFragment {
+public class PhotoPageFragment extends VisibleFragment implements PhotoPageActivity.OnBackPressedListener{
 
     private static final String ARG_URI = "photo_page_url";
     private Uri mUri;
@@ -43,6 +43,8 @@ public class PhotoPageFragment extends VisibleFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_photo_page, container, false);
 
+        ((PhotoPageActivity) getActivity()).setOnBackPressedListener(this);
+
         mProgressBar = (ProgressBar) v.findViewById(R.id.progress_bar);
         mProgressBar.setMax(100); //WebChromeClient reports in range 0-100
 
@@ -67,5 +69,14 @@ public class PhotoPageFragment extends VisibleFragment {
         });
         mWebView.loadUrl(mUri.toString());
         return v;
+    }
+
+    @Override
+    public void backPressed() {
+        if(mWebView.canGoBack()) {
+            mWebView.goBack(); //If there are webpages in the WebView's history, go back
+        } else {
+            getActivity().finish(); //Otherwise, just close the activity
+        }
     }
 }
