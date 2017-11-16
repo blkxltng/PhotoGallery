@@ -64,7 +64,40 @@ public class PhotoPageFragment extends VisibleFragment {
                 AppCompatActivity activity = (AppCompatActivity) getActivity();
                 activity.getSupportActionBar().setSubtitle(title);
             }
+
         });
+
+//        if(mWebView.getUrl().startsWith("http") || mWebView.getUrl().startsWith("https")) {
+//            mWebView.setWebChromeClient(new WebChromeClient() {
+//                @Override
+//                public void onProgressChanged(WebView view, int newProgress) {
+//                    if(newProgress == 100) {
+//                        mProgressBar.setVisibility(View.GONE);
+//                    } else {
+//                        mProgressBar.setVisibility(View.VISIBLE);
+//                        mProgressBar.setProgress(newProgress);
+//                    }
+//                }
+//
+//                @Override
+//                public void onReceivedTitle(WebView view, String title) {
+//                    AppCompatActivity activity = (AppCompatActivity) getActivity();
+//                    activity.getSupportActionBar().setSubtitle(title);
+//                }
+//
+//            });
+//            mWebView.loadUrl(mUri.toString());
+//        } else {
+//            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(mWebView.getUrl()));
+//            startActivity(i);
+//        }
+
+//        if(mUri.toString().startsWith("http") || mUri.toString().startsWith("https")) {
+//            mWebView.loadUrl(mUri.toString());
+//        } else {
+//            Intent i = new Intent(Intent.ACTION_VIEW, mUri);
+//            startActivity(i);
+//        }
         mWebView.loadUrl(mUri.toString());
         return v;
     }
